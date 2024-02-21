@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.ForegroundInfo
+import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -39,25 +40,26 @@ class TimerWorker(private val context: Context,
             .setSmallIcon(R.drawable.timer)
             .setContentTitle("Worker Manager")
             .setContentText("Worker Timer")
+            .setSound(null)
             .setContentIntent(pendingIntent)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(WM_CHANNEL_ID,
                 "wmNotificationChannel",
-                NotificationManager.IMPORTANCE_DEFAULT)
+                NotificationManager.IMPORTANCE_LOW)
             notificationManager.createNotificationChannel(channel)
         }
     }
     override fun doWork(): Result {
         Log.d("", "doWork")
-        createTimer(6, builder)
+        createTimer(6, builder).start()
         return Result.success()
     }
 
     private fun  createTimer(startValue: Int, builder: NotificationCompat.Builder): Deferred<Unit> {
         return CoroutineScope(Dispatchers.Default).async {
             var i = startValue
-            while (true) {
+            while (!isStopped) {
                 builder.setContentTitle(i.toString())
                 withContext(Dispatchers.Main) {
                     notificationManager.notify(WM_NOTIFICATION_ID, builder.build())
@@ -65,7 +67,7 @@ class TimerWorker(private val context: Context,
                 delay(1000)
                 i--
                 if (i == -1) {
-                    this.cancel()
+                    notificationManager.cancelAll()
                     break
                 }
             }

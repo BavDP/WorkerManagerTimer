@@ -4,9 +4,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.foregroundservicetimer.databinding.ActivityMainBinding
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var _binding: ActivityMainBinding
@@ -26,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         _binding.stopBtn.setOnClickListener {
-            WorkManager.getInstance(this).cancelWorkById(this.workerId)
+            WorkManager.getInstance(this).cancelWorkById(workerId)
         }
     }
 }
